@@ -1,0 +1,18 @@
+{
+  "name": "nullstack-ckeditor-adapter",
+  "version": "1.0.0",
+  "description": "CKEditor Adapter for Nullstack",
+  "main": "src/CKEditor.njs",
+  "author": "Mortaro",
+  "license": "MIT",
+  "repository": "github:Mortaro/nullstack-ckeditor-adapter",
+  "devDependencies": {
+    "nullstack": "*"
+  },
+  "peerDependencies": {
+    "nullstack": "*"
+  },
+  "dependencies": {
+    "jimp": "^0.16.1"
+  }
+}
