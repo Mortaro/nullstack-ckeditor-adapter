@@ -5,23 +5,24 @@ class CKEditor extends Nullstack {
 
   editor = null;
 
-  static async persist({base64, ckeditor}) {
+  static async persist({ckeditor, base64, name}) {
     const {existsSync, mkdirSync} = await import('fs');
     const {default: Jimp} = await import('jimp');
-    const width = ckeditor && ckeditor.imagesWidth ? ckeditor.imagesWidth : Jimp.AUTO;
-    const height = ckeditor && ckeditor.imagesHeight ? ckeditor.imagesHeight : Jimp.AUTO;
-    const quality = ckeditor && ckeditor.imagesQuality ? ckeditor.imagesQuality : 100;
     const folder = ckeditor && ckeditor.uploadFolder ? ckeditor.uploadFolder : 'public/uploads';
     let image = await Jimp.read(Buffer.from(base64, 'base64'));
     if (!existsSync(folder)) {
       mkdirSync(folder);
     }
-    const key = `${folder}/${new Date().getTime()}.jpg`;
-    if(quality || width || height) {
-      image.resize(width || Jimp.AUTO, height || Jimp.AUTO).quality(quality || 100).write(key);
-    } else {
-      image.write(key);
+    const key = `${folder}/${new Date().getTime()}-${name}.jpg`;
+    if(ckeditor && ckeditor.imagesWidth) {
+      image = image.resize(ckeditor.imagesWidth, ckeditor.imagesHeight || Jimp.AUTO);
+    } else if(ckeditor && ckeditor.imagesHeight) {
+      image = image.resize(ckeditor.imagesWidth || Jimp.AUTO, ckeditor.imagesHeight);
     }
+    if(ckeditor && ckeditor.imagesQuality) {
+      image = image.quality(ckeditor.imagesQuality);
+    }
+    image.write(key);
     return key.replace('public', '');
   }
 
@@ -32,7 +33,8 @@ class CKEditor extends Nullstack {
         reader.readAsBinaryString(file);
         reader.onload = async () => {
           const base64 = btoa(reader.result);
-          const value = await this.persist({base64});
+          const name = file.name;
+          const value = await this.persist({base64, name});
           loader.uploaded = true;
           resolve({default: value});
         };
