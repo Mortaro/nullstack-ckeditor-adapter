@@ -78,6 +78,16 @@ The language can be changed from the default english by passing a language attri
 <CKEditor bind={this.content} language="pt-BR" />
 ```
 
+## Caveats
+
+You have to manually enable a larger maximum payload size in order to process the uploaded images
+
+```jsx
+static async start(context) {
+  context.server.maximumPayloadSize = '5mb';
+}
+```
+
 ## License
 
 Nullstack CKEditor Adapter is released under the [MIT License](https://opensource.org/licenses/MIT).
