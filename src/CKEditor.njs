@@ -51,11 +51,11 @@ class CKEditor extends Nullstack {
     }
   }
 
-  importScript(src) {
+  importScript({source}) {
     return new Promise((resolve) => {
       const script = document.createElement('script');
       script.type = 'text/javascript';
-      script.src = src;
+      script.src = source;
       script.async = true;
       script.onload = resolve;
       document.querySelector('head').appendChild(script);
@@ -67,9 +67,9 @@ class CKEditor extends Nullstack {
     if(environment.client) {
       if(typeof(ClassicEditor) == 'undefined') {
         if(language) {
-          await this.importScript(`https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${language}.js`);
+          await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${language}.js`});
         }
-        await this.importScript(`https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js`);
+        await this.importScript({source: 'https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js'});
       }
       const selector = document.querySelector(`[name="${name}"]`);
       const options = {
@@ -81,7 +81,6 @@ class CKEditor extends Nullstack {
         const value = this.editor.getData();
         onchange && onchange({value});
       });
-      
     }
   }
 
