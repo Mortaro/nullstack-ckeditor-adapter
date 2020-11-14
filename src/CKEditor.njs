@@ -4,6 +4,7 @@ import UploadAdapter from './UploadAdapter';
 class CKEditor extends Nullstack {
 
   editor = null;
+  loaded = false;
 
   static async persist({ckeditor, base64, name}) {
     const {existsSync, mkdirSync} = await import('fs');
@@ -62,9 +63,13 @@ class CKEditor extends Nullstack {
     });
   }
 
-  async initiate(context) {
-    const {environment, language, name, onchange} = context;
-    if(environment.client) {
+  async initiate() {
+    await this.update();
+  }
+
+  async update({environment, language, name, onchange, value}) {
+    if(environment.client && !this.loaded) {
+      this.loaded = true;
       if(typeof(ClassicEditor) == 'undefined') {
         if(language) {
           await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${language}.js`});
@@ -74,7 +79,7 @@ class CKEditor extends Nullstack {
       const selector = document.querySelector(`[name="${name}"]`);
       const options = {
         language: language || 'en',
-        extraPlugins: [this.generateUploadAdapter(context)]
+        extraPlugins: [this.generateUploadAdapter()]
       }
       this.editor = await ClassicEditor.create(selector, options);
       this.editor.model.document.on('change:data', () => {
@@ -82,9 +87,6 @@ class CKEditor extends Nullstack {
         onchange && onchange({value});
       });
     }
-  }
-
-  update({value}) {
     if(this.editor && this.editor.getData() !== value) {
       this.editor.setData(value);
     }
@@ -93,13 +95,14 @@ class CKEditor extends Nullstack {
   async terminate() {
     if(this.editor) {
       this.editor.destroy();
+      this.editor = null;
     }
   }
   
-  render({name, value, class: klass}) {
+  render({name, class: klass}) {
     return (
       <div>
-        <textarea class={klass} name={name}>{value}</textarea>
+        <textarea class={klass} name={name}></textarea>
       </div>
     )
   }
