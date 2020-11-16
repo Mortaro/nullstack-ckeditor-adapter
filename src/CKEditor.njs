@@ -63,22 +63,25 @@ class CKEditor extends Nullstack {
     });
   }
 
-  async initiate() {
-    await this.update();
+  async initiate({environment}) {
+    if(environment.client) {
+      await this.update();
+    }
   }
 
-  async update({environment, language, name, onchange, value}) {
-    if(environment.client && !this.loaded) {
+  async update({page, language, name, onchange, value}) {
+    if(!this.loaded) {
       this.loaded = true;
+      const translation = (language || page.locale || '').toLowerCase();
       if(typeof(ClassicEditor) == 'undefined') {
-        if(language) {
-          await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${language}.js`});
+        if(translation) {
+          await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${translation}.js`});
         }
         await this.importScript({source: 'https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js'});
       }
       const selector = document.querySelector(`[name="${name}"]`);
       const options = {
-        language: language || 'en',
+        language: translation || 'en',
         extraPlugins: [this.generateUploadAdapter()]
       }
       this.editor = await ClassicEditor.create(selector, options);

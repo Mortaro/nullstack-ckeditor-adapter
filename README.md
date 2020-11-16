@@ -72,10 +72,23 @@ static async start(context) {
 }
 ```
 
-The language can be changed from the default english by passing a language attribute to the component
+## Language
+
+The default language is english
+
+You can change it per instance by passing a language attribute
 
 ```jsx
 <CKEditor bind={this.content} language="pt-BR" />
+```
+
+You can change the language globally by setting the page.locale in the context
+
+```jsx
+prepare({page}) {
+  page.locale = "pt-BR";
+  page.title = 'Portal Acanto Academy';
+}
 ```
 
 ## Caveats
