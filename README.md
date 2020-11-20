@@ -87,7 +87,6 @@ You can change the language globally by setting the page.locale in the context
 ```jsx
 prepare({page}) {
   page.locale = "pt-BR";
-  page.title = 'Portal Acanto Academy';
 }
 ```
 
