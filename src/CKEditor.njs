@@ -4,7 +4,6 @@ import UploadAdapter from './UploadAdapter';
 class CKEditor extends Nullstack {
 
   editor = null;
-  loaded = false;
 
   static async persist({ckeditor, base64, name}) {
     const {existsSync, mkdirSync} = await import('fs');
@@ -63,33 +62,28 @@ class CKEditor extends Nullstack {
     });
   }
 
-  async initiate({environment}) {
-    if(environment.client) {
-      await this.update();
+  async hydrate({page, language, onchange, value, self}) {
+    const translation = (language || page.locale || '').toLowerCase();
+    if(typeof(ClassicEditor) == 'undefined') {
+      if(translation) {
+        await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${translation}.js`});
+      }
+      await this.importScript({source: 'https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js'});
     }
+    const selector = self.element.querySelector('textarea');
+    const options = {
+      language: translation || 'en',
+      extraPlugins: [this.generateUploadAdapter()]
+    }
+    this.editor = await ClassicEditor.create(selector, options);
+    this.editor.setData(value);
+    this.editor.model.document.on('change:data', () => {
+      const value = this.editor.getData();
+      onchange && onchange({value});
+    });
   }
 
-  async update({page, language, name, onchange, value}) {
-    if(!this.loaded) {
-      this.loaded = true;
-      const translation = (language || page.locale || '').toLowerCase();
-      if(typeof(ClassicEditor) == 'undefined') {
-        if(translation) {
-          await this.importScript({source: `https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/translations/${translation}.js`});
-        }
-        await this.importScript({source: 'https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js'});
-      }
-      const selector = document.querySelector(`[name="${name}"]`);
-      const options = {
-        language: translation || 'en',
-        extraPlugins: [this.generateUploadAdapter()]
-      }
-      this.editor = await ClassicEditor.create(selector, options);
-      this.editor.model.document.on('change:data', () => {
-        const value = this.editor.getData();
-        onchange && onchange({value});
-      });
-    }
+  async update({value}) {
     if(this.editor && this.editor.getData() !== value) {
       this.editor.setData(value);
     }
@@ -105,7 +99,7 @@ class CKEditor extends Nullstack {
   render({name, class: klass}) {
     return (
       <div>
-        <textarea class={klass} name={name}></textarea>
+        <textarea class={klass} name={name} />
       </div>
     )
   }
