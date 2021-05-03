@@ -1,6 +1,8 @@
 import Nullstack from 'nullstack';
 import UploadAdapter from './UploadAdapter';
 
+const editors = {}
+
 class CKEditor extends Nullstack {
 
   editor = null;
@@ -75,27 +77,30 @@ class CKEditor extends Nullstack {
       language: translation || 'en',
       extraPlugins: [this.generateUploadAdapter()]
     }
-    this.editor = await ClassicEditor.create(selector, options);
-    this.editor.setData(value);
-    this.editor.model.document.on('change:data', () => {
-      const value = this.editor.getData();
+    const editor = await ClassicEditor.create(selector, options);
+    editors[self.key] = editor
+    editor.setData(value);
+    editor.model.document.on('change:data', () => {
+      const value = editor.getData();
       onchange && onchange({value});
     });
   }
 
-  async update({value}) {
-    if(this.editor && this.editor.getData() !== value) {
-      this.editor.setData(value);
+  async update({value, self}) {
+    const editor = editors[self.key]
+    if(editor && editor.getData() !== value) {
+      editor.setData(value);
     }
   }
 
-  async terminate() {
-    if(this.editor) {
-      this.editor.destroy();
-      this.editor = null;
+  async terminate({self}) {
+    const editor = editors[self.key]
+    if(editor) {
+      editor.destroy();
+      delete editors[self.key];
     }
   }
-  
+
   render({name, class: klass}) {
     return (
       <div>
@@ -107,3 +112,4 @@ class CKEditor extends Nullstack {
 }
 
 export default CKEditor;
+
